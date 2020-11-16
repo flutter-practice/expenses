@@ -1,28 +1,70 @@
+import 'dart:math';
+
+import 'package:expenses/components/expense_form.dart';
+import 'package:expenses/components/expense_list.dart';
 import 'package:flutter/material.dart';
-import 'expense.dart';
-import 'package:intl/intl.dart';
+import 'models/expense.dart';
 
 main() => runApp(ExpensesApp());
 
 class ExpensesApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: HomePage());
+    return MaterialApp(
+      home: HomePage(),
+    );
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   final _expenses = [
     Expense(id: '1', title: 'PC', value: 550, date: DateTime.now()),
-    Expense(id: '2', title: 'Monitor', value: 90, date: DateTime.now())
+    Expense(id: '2', title: 'Monitor', value: 90, date: DateTime.now()),
   ];
+
+  _addExpense(String title, double value) {
+    final newExpense = Expense(
+      id: Random().nextDouble().toString(),
+      title: title,
+      value: value,
+      date: DateTime.now(),
+    );
+
+    setState(() {
+      _expenses.add(newExpense);
+    });
+
+    Navigator.of(context).pop();
+  }
+
+  _openExpenseFormModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) {
+        return ExpenseForm(_addExpense);
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text('Personal expenses')),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+      appBar: AppBar(
+        title: Text('Personal expenses'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () => _openExpenseFormModal(context),
+          )
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Container(
@@ -32,52 +74,14 @@ class HomePage extends StatelessWidget {
                 elevation: 5,
               ),
             ),
-            Column(
-              children: _expenses.map((tr) {
-                return Card(
-                  child: Row(
-                    children: [
-                      Container(
-                          margin: EdgeInsets.symmetric(
-                              horizontal: 15, vertical: 10),
-                          decoration: BoxDecoration(
-                              border: Border.all(
-                            color: Colors.purple,
-                            width: 2,
-                          )),
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            '${tr.value.toStringAsFixed(2)} €',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                              color: Colors.purple,
-                            ),
-                          )),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            tr.title,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Text(
-                            DateFormat('d MMM y').format(tr.date),
-                            style: TextStyle(
-                              color: Colors.grey,
-                            ),
-                          )
-                        ],
-                      )
-                    ],
-                  ),
-                );
-              }).toList(),
-            )
+            ExpenseList(_expenses),
           ],
-        ));
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () => _openExpenseFormModal(context),
+      ),
+    );
   }
 }
