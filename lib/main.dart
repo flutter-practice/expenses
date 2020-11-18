@@ -1,5 +1,5 @@
 import 'dart:math';
-
+import 'package:expenses/components/chart.dart';
 import 'package:expenses/components/expense_form.dart';
 import 'package:expenses/components/expense_list.dart';
 import 'package:flutter/material.dart';
@@ -17,12 +17,15 @@ class ExpensesApp extends StatelessWidget {
         accentColor: Colors.amber,
         fontFamily: 'Quicksand',
         textTheme: ThemeData.light().textTheme.copyWith(
-              headline6: TextStyle(
-                fontFamily: 'OpenSans',
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            headline6: TextStyle(
+              fontFamily: 'OpenSans',
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
             ),
+            button: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            )),
         appBarTheme: AppBarTheme(
           textTheme: ThemeData.light().textTheme.copyWith(
                 headline6: TextStyle(
@@ -45,12 +48,20 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final List<Expense> _expenses = [];
 
-  _addExpense(String title, double value) {
+  List<Expense> get _recentExpenses {
+    return _expenses.where((exp) {
+      return exp.date.isAfter(DateTime.now().subtract(
+        Duration(days: 7),
+      ));
+    }).toList();
+  }
+
+  _addExpense(String title, double value, DateTime date) {
     final newExpense = Expense(
       id: Random().nextDouble().toString(),
       title: title,
       value: value,
-      date: DateTime.now(),
+      date: date,
     );
 
     setState(() {
@@ -58,6 +69,12 @@ class _HomePageState extends State<HomePage> {
     });
 
     Navigator.of(context).pop();
+  }
+
+  _removeExpense(String id) {
+    setState(() {
+      _expenses.removeWhere((item) => item.id == id);
+    });
   }
 
   _openExpenseFormModal(BuildContext context) {
@@ -85,14 +102,8 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Container(
-              child: Card(
-                color: Colors.blue,
-                child: Text('Graph'),
-                elevation: 5,
-              ),
-            ),
-            ExpenseList(_expenses),
+            Chart(_recentExpenses),
+            ExpenseList(_expenses, _removeExpense),
           ],
         ),
       ),

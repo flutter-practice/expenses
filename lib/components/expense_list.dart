@@ -4,12 +4,14 @@ import 'package:intl/intl.dart';
 
 class ExpenseList extends StatelessWidget {
   final List<Expense> expenses;
-  ExpenseList(this.expenses);
+  final void Function(String) onRemove;
+
+  ExpenseList(this.expenses, this.onRemove);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 300,
+      height: 490,
       child: expenses.isEmpty
           ? Column(
               children: [
@@ -34,41 +36,33 @@ class ExpenseList extends StatelessWidget {
               itemBuilder: (ctx, index) {
                 final expense = expenses[index];
                 return Card(
-                  child: Row(
-                    children: [
-                      Container(
-                          margin: EdgeInsets.symmetric(
-                              horizontal: 15, vertical: 10),
-                          decoration: BoxDecoration(
-                              border: Border.all(
-                            color: Theme.of(context).primaryColor,
-                            width: 2,
-                          )),
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            '${expense.value.toStringAsFixed(2)} €',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                          )),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            expense.title,
-                            style: Theme.of(context).textTheme.headline6,
-                          ),
-                          Text(
-                            DateFormat('d MMM y').format(expense.date),
-                            style: TextStyle(
-                              color: Colors.grey,
-                            ),
-                          )
-                        ],
-                      )
-                    ],
+                  elevation: 5,
+                  margin: EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 5,
+                  ),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      radius: 30,
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: FittedBox(
+                          child: Text('${expense.value} €'),
+                        ),
+                      ),
+                    ),
+                    title: Text(
+                      expense.title,
+                      style: Theme.of(context).textTheme.headline6,
+                    ),
+                    subtitle: Text(
+                      DateFormat('d MMM y').format(expense.date),
+                    ),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete),
+                      color: Theme.of(context).errorColor,
+                      onPressed: () => onRemove(expense.id),
+                    ),
                   ),
                 );
               },
